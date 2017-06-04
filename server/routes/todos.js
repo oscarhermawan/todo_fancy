@@ -9,9 +9,7 @@ router.get('/getTodosById', jwt.verifyToken,  api.getAllTodosFromId)
 router.post('/', jwt.verifyToken, api.insertTodo)
 router.delete('/:id', jwt.verifyToken, api.deleteTodo)
 router.get('/search/:search', jwt.verifyToken, api.searchTodo)
-router.put('/:id', api.updateTodo)
-
-
+router.put('/:id', jwt.verifyToken, api.updateTodo)
 
 
 module.exports = router

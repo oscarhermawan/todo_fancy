@@ -43,40 +43,6 @@ methods.insertUser = function(req, res){
   })
 }
 
-//INSERT FB
-methods.fbLogin = function(req, res){
-  console.log(req.body.member_id);
-
-  //PERTAMA LOGIN, ID LANGSUNG DIBUAT
-  User.findOne({member_id:req.body.member_id},function(err, result) {
-    if(result == null){
-      var userInput = new User({
-        member_id:req.body.member_id
-      })
-      userInput.save(function(err,userInput){
-        if(err){
-          return console.log(err);
-        } else {
-          res.send(userInput)
-        }
-      })
-    }
-
-    //KALAU SUDAH PERNAH LOGIN FB
-    else {
-      var getUser = User.findOne({member_id : req.body.member_id})
-      getUser.exec(function(err, user){
-          let fb = {
-            member_id:user.member_id
-          }
-          let token = jwt.sign(fb, 'secret')
-           res.send(token)
-      })
-    }
-  })
-}
-
-
 //login local
 methods.signIn = function (username, password, next) {
   console.log(username, password);
@@ -96,6 +62,35 @@ methods.signIn = function (username, password, next) {
     }
   })
 }
+
+methods.signinFB = function(req, res){
+    console.log('masuk FB');
+    Member.findOne({member_id:req.body.id},function(err, result) {
+      if(result == null){
+        var userInput = new Member({
+          member_id:req.body.id,
+          first_name:req.body.first_name,
+          last_name:req.body.name
+        })
+        userInput.save(function(err,record){
+          if(err){
+            return console.log(err);
+          } else {
+            let token = jwt.sign(record, 'secret', {
+                expiresIn: '1d'
+            })
+            res.send(token)
+          }
+        })
+      }
+      else {
+        let token = jwt.sign(result, 'secret', {
+            expiresIn: '1d'
+        })
+        res.send(token)
+      }
+    })
+  }
 
 
 module.exports = methods

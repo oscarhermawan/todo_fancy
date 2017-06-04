@@ -17,7 +17,7 @@
             <a class="nav-item">
               <img src="http://bulma.io/images/bulma-logo.png" alt="Bulma logo">
             </a>
-            <a class="nav-item is-tab is-hidden-mobile is-active">Your Todo List</a>
+            <a class="nav-item is-tab is-hidden-mobile is-active" @click="getDataTodos">Your Todo List</a>
           </div>
           <span class="nav-toggle">
             <span></span>
@@ -68,8 +68,9 @@
               </div>
             </div>
             <footer class="card-footer">
-              <a class="card-footer-item">Done</a>
-              <a class="card-footer-item">Edit</a>
+                <a class="card-footer-item" v-if="list.is_complete == true">Done</a>
+                <a class="card-footer-item" v-else>Not Yet</a>
+              <a class="card-footer-item" @click="editMemo(list)">Edit</a>
               <a class="card-footer-item" @click="deleteMemo(list)">Delete</a>
             </footer>
           </div>
@@ -77,24 +78,45 @@
       </div>
 
       <!-- LOGIN -->
-   <div :class="modalAddMemo">
-     <div class="modal-background"></div>
-     <div class="modal-card">
-       <header class="modal-card-head">
-         <p class="modal-card-title">Add Your Memo</p>
-         <button class="delete"></button>
-       </header>
-       <section class="modal-card-body">
-           <input class="input" type="text" v-model="memo" placeholder="Write your Memo Here"></br>
-           <input class="input" type="text" v-model="description" placeholder="Write your Description Here">
-       </section>
-       <footer class="modal-card-foot">
-           <button class="button is-success" name="button" @click="addMemo"> Add </button>
-         <a class="button" @click="nonAktifinModalMemo">Cancel</a>
-       </footer>
+     <div :class="modalAddMemo">
+       <div class="modal-background"></div>
+       <div class="modal-card">
+         <header class="modal-card-head">
+           <p class="modal-card-title">Add Your Memo</p>
+           <button class="delete"></button>
+         </header>
+         <section class="modal-card-body">
+             <input class="input" type="text" v-model="memo" placeholder="Write your Memo Here"></br>
+             <input class="input" type="text" v-model="description" placeholder="Write your Description Here">
+         </section>
+         <footer class="modal-card-foot">
+             <button class="button is-success" name="button" @click="addMemo"> Add </button>
+           <a class="button" @click="nonAktifinModalMemo">Cancel</a>
+         </footer>
+       </div>
      </div>
-   </div>
-   <!-- END LOGIN -->
+     <!-- END LOGIN -->
+
+
+     <div :class="modalEditMemo">
+       <div class="modal-background"></div>
+       <div class="modal-card">
+         <header class="modal-card-head">
+           <p class="modal-card-title">Add Your Memo</p>
+           <button class="delete"></button>
+         </header>
+         <section class="modal-card-body">
+             <input class="input" type="text" v-model="memoEdit" placeholder="Write your Memo Here"></br>
+             <input class="input" type="text" v-model="descriptionEdit" placeholder="Write your Description Here">
+             <input class="input" type="text" v-model="is_completeEdit" placeholder="Write your Description Here">
+         </section>
+         <footer class="modal-card-foot">
+             <button class="button is-success" name="button" @click="submitEditMemo">Edit Memo</button>
+           <a class="button" @click="nonAktifinModalMemo">Cancel</a>
+         </footer>
+       </div>
+     </div>
+
     </div>
   </body>
 
@@ -104,10 +126,15 @@
     el : '#app',
     data:{
       lists_todo:[],
+      modalEditMemo:'modal',
       modalAddMemo:'modal',
       memo:'',
       description:'',
-      search:''
+      search:'',
+      memoEdit:'',
+      descriptionEdit:'',
+      is_completeEdit:'',
+      id_todo:''
     },
     created:function(){
       let self = this
@@ -155,11 +182,29 @@
           console.log(err);
         })
       },
+      editMemo(list){
+        this.memoEdit = list.memo
+        this.descriptionEdit = list.description
+        this.is_completeEdit = list.is_complete
+        this.id_todo = list._id
+        this.modalEditMemo = 'modal is-active'
+      },
+      submitEditMemo(){
+        let self = this
+        axios.put(`http://localhost:3000/todos/${this.id_todo}`, {memo:this.memoEdit, description:this.descriptionEdit, is_complete:this.is_completeEdit}, {headers : {token:localStorage.getItem('token')}})
+          .then(function(response){
+            self.modalEditMemo = 'modal'
+          })
+          .catch(function(err){
+            console.log(err);
+          })
+      },
       findMemo(){
         let self = this
+        // console.log('search',this.search);
         axios.get(`http://localhost:3000/todos/search/${this.search}`, {headers : {token:localStorage.getItem('token')}})
           .then(function(response){
-            console.log('find',response.data);
+            self.search=''
             self.lists_todo = response.data
           })
           .catch(function(err){
@@ -175,6 +220,7 @@
       },
       nonAktifinModalMemo:function(){
         this.modalAddMemo = 'modal'
+        this.modalEditMemo = 'modal'
       }
     }
   })

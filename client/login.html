@@ -16,7 +16,7 @@
           <ul>
             <li class="is-active"><a>Login</a></li>
             <li><a href="register.html">Register</a></li>
-            <li><a>Login with Facebook</a></li>
+            <li><fb:login-button scope="email, public_profile" onlogin="checkLoginState();"></li>
           </ul>
         </div>
 
@@ -50,6 +50,56 @@
   </body>
 
   <script>
+  window.fbAsyncInit = function() {
+    FB.init({
+      appId      : '1188694054574729',
+      xfbml      : true,
+      version    : 'v2.9'
+    });
+    FB.AppEvents.logPageView();
+    FB.getLoginStatus(function(response) {
+      // console.log(response);
+    });
+  };
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+   function checkLoginState() {
+      FB.getLoginStatus(function(response) {
+        statusChangeCallback(response);
+      });
+    }
+    function statusChangeCallback(response) {
+      if (response.status === 'connected') {
+        FB.api('/me', {fields: 'first_name, name, email'}, function (apiResponse) {
+          let url = 'http://localhost:3000/users/signinfb';
+          let body = {
+            id: apiResponse.id,
+            email: apiResponse.email,
+            first_name:apiResponse.first_name,
+            last_name:apiResponse.name,
+            token: response.authResponse.accessToken
+          }
+          axios.post(url, body)
+            .then((res) => {
+              localStorage.setItem('token', res.data) //result.data adalah TOKEN
+              window.location.href = '/'
+            })
+            .catch((err) => {
+              console.log('tidak berhasil');
+              console.log(err);
+            });
+        });
+      } else {
+        // The person is not logged into your app or we are unable to tell.
+        document.getElementById('status').innerHTML = 'Please log ' +
+          'into this app.';
+      }
+    }
     var app = new Vue({
       el:'#app',
       data:{

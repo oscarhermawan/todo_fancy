@@ -44,14 +44,15 @@ methods.updateTodo = function (req,res) {
   Todo.findById(req.params.id, function(err, result){
     if(!err){
       let update = {
-        member_id:req.body.member_id || result.member_id,
+        member_id:result.member_id,
         memo:req.body.memo || result.memo,
+        description:req.body.description || result.description,
         is_complete:req.body.is_complete || result.is_complete
       }
 
-      Todo.findByIdAndRemove(req.params.id, update, {new:true}, function(err, result){
+      Todo.findByIdAndUpdate(req.params.id, update, {new:true}, function(err, result){
         if(!err){
-          res.send('update sukses')
+          res.send(result)
         } else {
           res.send(err)
         }
