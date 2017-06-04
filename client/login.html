@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.2/css/bulma.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.3.3/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.1/axios.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+  </head>
+  <body>
+  <div id="app">
+    </br>
+      <div class="login">
+        <div class="tabs is-medium">
+          <ul>
+            <li class="is-active"><a>Login</a></li>
+            <li><a href="register.html">Register</a></li>
+            <li><a>Login with Facebook</a></li>
+          </ul>
+        </div>
+
+        <div class="columns">
+          <div class="column is-one-quarter">
+            <label class="label">Username</label>
+          </div>
+          <div class="column">
+            <input class="input" type="text" placeholder="Text input" v-model="username">
+          </div>
+        </div>
+
+        <div class="columns">
+          <div class="column is-one-quarter">
+            <label class="label">Password</label>
+          </div>
+          <div class="column">
+            <input class="input" type="password" placeholder="Text input" v-model="password">
+          </div>
+        </div>
+
+        <div class="columns">
+          <div class="column is-one-quarter">
+          </div>
+          <div class="column">
+            <a class="button is-info" @click="loginLocal">Login</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    var app = new Vue({
+      el:'#app',
+      data:{
+        username:'',
+        password:''
+      },
+      methods:{
+        loginLocal:function(){
+          axios.post('http://localhost:3000/users/signin',{
+            username:this.username,
+            password:this.password
+          })
+          .then((result)=>{
+            if(result.data.token == null){
+              console.log('token',result.data.message);
+            }
+            else {
+              localStorage.setItem('token', result.data.token)
+              window.location.href = '/'
+            }
+          })
+          .catch((err)=>{
+            console.log(err);
+          })
+        }
+      },
+      created:function(){
+        let self = this
+        if(localStorage.getItem('token') != null){
+          window.location.href = '/'
+        }
+      }
+    })
+  </script>
+</html>

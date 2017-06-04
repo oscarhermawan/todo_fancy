@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>TODO</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.2/css/bulma.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.3.3/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.1/axios.min.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+  </head>
+  <body>
+    <div id="app">
+      <nav class="nav has-shadow">
+        <div class="container">
+          <div class="nav-left">
+            <a class="nav-item">
+              <img src="http://bulma.io/images/bulma-logo.png" alt="Bulma logo">
+            </a>
+            <a class="nav-item is-tab is-hidden-mobile is-active">Your Todo List</a>
+          </div>
+          <span class="nav-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+          <div class="nav-right nav-menu">
+            <div class="level-item">
+              <div class="field has-addons">
+                <p class="control">
+                  <input class="input" type="text" placeholder="Find ur todo" v-model="search">
+                </p>
+                <p class="control">
+                  <button class="button" @click="findMemo">
+                    Search
+                  </button>
+                </p>
+              </div>
+            </div>
+            <a class="nav-item is-tab" @click="aktifinModalMemo">Add Memo</a>
+            <a class="nav-item is-tab" @click="logOut">Log Out</a>
+          </div>
+        </div>
+      </nav>
+    </br>
+
+
+      <div class="columns is-multiline is-mobile">
+
+        <div class="column is-one-quarter" v-for="list in lists_todo">
+          <div class="card">
+            <header class="card-header">
+              <p class="card-header-title">
+                {{list.memo}}
+              </p>
+              <a class="card-header-icon">
+                <span class="icon">
+                  <i class="fa fa-angle-down"></i>
+                </span>
+              </a>
+            </header>
+            <div class="card-content">
+              <div class="content">
+                {{list.description}}
+                <br><br>
+                <small>Start on {{list.createdAt}}</small><br>
+                <small>Update at {{list.updatedAt}}</small>
+              </div>
+            </div>
+            <footer class="card-footer">
+              <a class="card-footer-item">Done</a>
+              <a class="card-footer-item">Edit</a>
+              <a class="card-footer-item" @click="deleteMemo(list)">Delete</a>
+            </footer>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOGIN -->
+   <div :class="modalAddMemo">
+     <div class="modal-background"></div>
+     <div class="modal-card">
+       <header class="modal-card-head">
+         <p class="modal-card-title">Add Your Memo</p>
+         <button class="delete"></button>
+       </header>
+       <section class="modal-card-body">
+           <input class="input" type="text" v-model="memo" placeholder="Write your Memo Here"></br>
+           <input class="input" type="text" v-model="description" placeholder="Write your Description Here">
+       </section>
+       <footer class="modal-card-foot">
+           <button class="button is-success" name="button" @click="addMemo"> Add </button>
+         <a class="button" @click="nonAktifinModalMemo">Cancel</a>
+       </footer>
+     </div>
+   </div>
+   <!-- END LOGIN -->
+    </div>
+  </body>
+
+
+  <script>
+  var app = new Vue({
+    el : '#app',
+    data:{
+      lists_todo:[],
+      modalAddMemo:'modal',
+      memo:'',
+      description:'',
+      search:''
+    },
+    created:function(){
+      let self = this
+      if(localStorage.getItem('token') == null){
+        window.location.href = '/login.html'
+      } else {
+        this.getDataTodos()
+      }
+    },
+    methods:{
+      getDataTodos:function(){
+        axios.get('http://localhost:3000/todos/getTodosById', {headers : {token:localStorage.getItem('token')}})
+        .then((todos)=>{
+          console.log(todos.data);
+          app.lists_todo = todos.data
+        })
+        .catch((err)=>{
+          console.log(err);
+        })
+      },
+      addMemo:function(){
+        let self = this
+        axios.post('http://localhost:3000/todos/', {memo:this.memo, description:this.description}, {headers : {token:localStorage.getItem('token')}})
+        .then((todos)=>{
+          self.memo=''
+          self.description=''
+          self.lists_todo.push(todos.data)
+          this.modalAddMemo = 'modal'
+          // self.lists_todo
+        })
+        .catch((err)=>{
+          console.log(err);
+        })
+      },
+      deleteMemo:function(list){
+        let self = this
+        axios.delete(`http://localhost:3000/todos/${list._id}`, {headers : {token:localStorage.getItem('token')}})
+        .then((todos)=>{
+          var index = self.lists_todo.findIndex(lists => lists._id == todos.data._id)
+          if(index!=-1){
+            self.lists_todo.splice(index, 1)
+          }
+        })
+        .catch((err)=>{
+          console.log(err);
+        })
+      },
+      findMemo(){
+        let self = this
+        axios.get(`http://localhost:3000/todos/search/${this.search}`, {headers : {token:localStorage.getItem('token')}})
+          .then(function(response){
+            console.log('find',response.data);
+            self.lists_todo = response.data
+          })
+          .catch(function(err){
+            console.log(err);
+          })
+      },
+      logOut:function(){
+        window.localStorage.removeItem('token')
+        window.location.href = '/login.html'
+      },
+      aktifinModalMemo:function(){
+        this.modalAddMemo = 'modal is-active'
+      },
+      nonAktifinModalMemo:function(){
+        this.modalAddMemo = 'modal'
+      }
+    }
+  })
+  </script>
+</html>

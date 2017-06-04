@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Login</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.2/css/bulma.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.3.3/vue.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.16.1/axios.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/style.css">
+  </head>
+  <body>
+  <div id="app">
+    </br>
+      <div class="login">
+        <div class="tabs is-medium">
+          <ul>
+            <li><a href="login.html">Login</a></li>
+            <li class="is-active"><a>Register</a></li>
+            <li><a>Login with Facebook</a></li>
+          </ul>
+        </div>
+
+        <div class="columns">
+          <div class="column is-one-quarter">
+            <label class="label">Username</label>
+          </div>
+          <div class="column">
+            <input class="input" type="text" placeholder="Input your username" v-model="username">
+          </div>
+        </div>
+
+        <div class="columns">
+          <div class="column is-one-quarter">
+            <label class="label">Password</label>
+          </div>
+          <div class="column">
+            <input class="input" type="password" placeholder="Input your password" v-model="password">
+          </div>
+        </div>
+
+        <div class="columns">
+          <div class="column is-one-quarter">
+            <label class="label">First Name</label>
+          </div>
+          <div class="column">
+            <input class="input" type="text" placeholder="Input your First Name" v-model="firstName">
+          </div>
+        </div>
+
+        <div class="columns">
+          <div class="column is-one-quarter">
+            <label class="label">Last Name</label>
+          </div>
+          <div class="column">
+            <input class="input" type="text" placeholder="Input your Last Name" v-model="lastName">
+          </div>
+        </div>
+
+        <div class="columns">
+          <div class="column is-one-quarter">
+          </div>
+          <div class="column">
+            <a class="button is-info" @click="register">Register</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+
+  <script>
+    var app = new Vue({
+      el:'#app',
+      data:{
+        username:'',
+        password:'',
+        firstName:'',
+        lastName:''
+      },
+      methods:{
+        register:function(){
+          axios.post('http://localhost:3000/users',{
+            username:this.username,
+            password:this.password,
+            firstName:this.firstName,
+            lastName:this.lastName
+          })
+          .then((result)=>{
+            alert('Successful Register Your ID')
+            window.location.href = '/login.html'
+          })
+          .catch((err)=>{
+            console.log(err);
+          })
+        }
+      },
+      created:function(){
+        let self = this
+        if(localStorage.getItem('token') != null){
+          window.location.href = '/'
+        }
+      }
+    })
+  </script>
+</html>
