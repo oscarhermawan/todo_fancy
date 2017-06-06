@@ -193,7 +193,6 @@
         let self = this
         axios.put(`http://localhost:3000/todos/${this.id_todo}`, {memo:this.memoEdit, description:this.descriptionEdit, is_complete:this.is_completeEdit}, {headers : {token:localStorage.getItem('token')}})
           .then(function(todos){
-            // console.log(todos.data._id);
             var index = self.lists_todo.findIndex(lists => lists._id == todos.data._id)
             if(index!=-1){
               self.lists_todo.splice(index, 1, todos.data)
